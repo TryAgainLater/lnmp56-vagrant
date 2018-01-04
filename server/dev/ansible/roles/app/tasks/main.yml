@@ -1,0 +1,9 @@
+---
+# application tasks to be customized and to run after the main provision
+
+- name: Chown www folder 
+  command: chown -R vagrant:vagrant {{ nginx.source_folder }}/
+  
+#- name: Doctrine build database
+#  command: php -f doctrine build-all-reload y chdir=/vagrant/source/src/app/doctrine
+#  ignore_errors: True

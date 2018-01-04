@@ -1,0 +1,36 @@
+---
+- name: Create www folder
+  file: dest={{ nginx.source_folder }}  state=directory
+    
+- name: Copy sources to www folder
+  synchronize: 
+    mode: pull
+    src: "/vagrant/source/"
+    dest: "{{ nginx.source_folder }}/source/"
+    recursive: yes
+    rsync_opts:
+      - "--no-motd"
+      - "--exclude=.git"
+      - "--exclude=.settings"
+      - "--exclude=build.xml"
+      - "--exclude=build.properties"
+      - "--exclude=.project"
+      - "--exclude=.buildpath"
+      - "--exclude=tools"
+      - "--exclude=src"
+
+- name: Copy from src to www/source folder
+  synchronize: 
+    mode: pull
+    src: "/vagrant/source/src/"
+    dest: "{{ nginx.source_folder }}/source/"
+    recursive: yes
+
+- name: Copy from tools/root to www/source folder
+  synchronize: 
+    mode: pull
+    src: "/vagrant/source/tools/root/"
+    dest: "{{ nginx.source_folder }}/source/"
+    recursive: yes
+    rsync_opts:
+      - "--exclude=.svn"

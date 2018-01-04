@@ -1,0 +1,60 @@
+---
+# Retrieve the current hostname, because {{ ansible_hostname }} still contains the old name
+- shell: hostname
+  register: current_hostname
+
+- name: Add key for repo
+  apt_key: keyserver=pgp.mit.edu id=5072E1F5
+  when: ansible_distribution == "Debian"
+
+- name: PHP | Install MySQL PPA
+  apt_repository: 
+    repo: deb http://repo.mysql.com/apt/debian {{ ansible_distribution_release }} mysql-5.7
+
+- name: Specify MySQL root password before installing
+  debconf: name='mysql-server' question='mysql-server/root_password' value='{{ mysql.root_password }}' vtype='password'
+
+- name: Confirm MySQL root password before installing
+  debconf: name='mysql-server' question='mysql-server/root_password_again' value='{{ mysql.root_password }}' vtype='password'
+
+- name: mysql | Install MySQL Packages
+  sudo: yes
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - mysql-server
+    - mysql-client
+    - python-mysqldb
+    
+- name: mysql | My.cnf configuration
+  lineinfile: dest=/etc/mysql/mysql.conf.d/mysqld.cnf mode=0644 state=present regexp='bind-address\s*=\s*127\.0\.0\.1\s*' line='bind-address = 0.0.0.0'
+  notify: restart mysql 
+  
+- name: mysql | My.cnf disable strict mode
+  lineinfile: "dest=/etc/mysql/mysql.conf.d/mysqld.cnf line='sql_mode=IGNORE_SPACE,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'"
+  notify: restart mysql 
+    
+#- name: mysql | Update root password for all root accounts
+#  mysql_user: name=root host={{ item }} check_implicit_admin=yes password={{ mysql.root_password }} login_user=root login_password={{ mysql.root_password }}
+#  with_items:
+#    - "{{ current_hostname.stdout | lower }}"
+#    - 127.0.0.1
+#    - ::1
+#    - localhost
+#    - "{{ '%' }}"
+
+- name: mysql | Create databases
+  mysql_db: name={{ mysql.database }} state=present login_user=root login_password={{ mysql.root_password }}
+
+- name: mysql | Import dump
+  mysql_db: name={{ mysql.database }} state=import login_user=root login_password={{ mysql.root_password }} target=/vagrant/{{ mysql.dump }}
+  when: mysql.dump
+
+- name: mysql | Ensure anonymous users are not in the database
+  mysql_user: name='' host={{ item }} state=absent login_user=root login_password={{ mysql.root_password }}
+  with_items:
+    - localhost
+    - "{{ current_hostname.stdout | lower }}"
+
+- name: mysql | Create users
+  mysql_user: name={{ mysql.user }} password={{ mysql.password }} priv={{ mysql.database }}.*:ALL host=% state=present login_user=root login_password={{ mysql.root_password }}
+  ignore_errors: yes

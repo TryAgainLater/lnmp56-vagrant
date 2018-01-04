@@ -1,0 +1,20 @@
+---
+- name: Install Nginx
+  sudo: yes
+  apt: pkg=nginx state=latest
+
+- name: Set permissions on socket - owner
+  lineinfile: "dest=/etc/nginx/nginx.conf state=present regexp='^user ' line='user vagrant;'"
+
+- name: Web directory
+  file: path={{ nginx.docroot }} state=directory owner=vagrant group=vagrant mode=0775
+
+- name: Change default nginx site
+  sudo: yes
+  template: src=default.tpl dest=/etc/nginx/sites-available/default
+  notify: 
+    - restart nginx
+
+#- name: Nginx disable sendfile  
+#  lineinfile: dest=/etc/nginx/nginx.conf mode=0644 state=present regexp='sendfile\s*' line='sendfile off;'
+#  notify: restart nginx

@@ -1,0 +1,72 @@
+---
+server:
+    install: '1'
+    packages: [vim, htop]
+    timezone: Europe/Kiev
+    locale: en_US.UTF-8
+    name: replace_me_project_name
+vagrant_local:
+    install: '1'
+    vm: { base_box: trusty64, hostname: default, ip: 192.168.33.99, memory: '512', sharedfolder: ./, syncType: '0' }
+nginx:
+    install: '1'
+    docroot: /var/www/source
+    source_folder: /var/www
+    servername: mammy.dev
+mysql:
+    install: '1'
+    root_password: IchefEilganowsnuchynciHuvHang1kijlarjIvvavyow
+    database: replace_me_db_name
+    user: project_db_user
+    password: project_db_password
+    dump: ''
+php:
+    install: '1'
+    ppa: php5-5.6
+    packages: [php5-cli, php5-intl, php5-mcrypt, php5-gd, php5-fpm, php5-common, php5-memcache, php5-mysql, php5-curl, php-pear]
+    peclpackages: [APC]
+    short_open_tag: 'On'
+    php_configs: []
+nodejs:
+    version: "6.x"
+    # Pin-Priority of NodeSource repository
+    nodesource_pin_priority: 500
+redis:
+    port: 6379
+    bind_interface: 127.0.0.1
+    unixsocket: ''
+    timeout: 300
+    conf_path: /etc/redis/redis.conf
+    # Installation candidate
+    daemon: redis-server
+
+    loglevel: "notice"
+    logfile: /var/log/redis/redis-server.log
+
+    databases: 16
+
+    # Set to an empty set to disable persistence (saving the DB to disk).
+    save:
+      - 900 1
+      - 300 10
+      - 60 10000
+
+    rdbcompression: "yes"
+    dbfilename: dump.rdb
+    dbdir: /var/lib/redis
+
+    maxmemory: 0
+    maxmemory_policy: "noeviction"
+    maxmemory_samples: 5
+
+    appendonly: "no"
+    appendfsync: "everysec"
+
+    # Add extra include files for local configuration/overrides.
+    includes: []
+
+    # Require authentication to Redis with a password.
+    requirepass: ""
+
+    # Disable certain Redis commands for security reasons.
+    disabled_commands: []

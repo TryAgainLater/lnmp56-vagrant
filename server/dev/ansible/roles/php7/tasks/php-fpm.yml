@@ -1,0 +1,51 @@
+---
+# PHP7-FPM
+
+- name: PHP-FPM | Install PHP7.1-FPM
+  apt: pkg=php7.1-fpm state=installed
+
+- name: PHP-FPM | Install Primary Configuration File
+  template: src=php-fpm.conf dest=/etc/php/7.1/fpm/php-fpm.conf
+
+- name: PHP-FPM | Install WWW Pool Configuration File
+  template: src=php-fpm_pool_www.conf dest=/etc/php/7.1/fpm/pool.d/www.conf
+  notify: 
+    - restart php7.1-fpm
+
+# Update PHP.ini
+
+- name: PHP-FPM | Install Custom PHP.ini Configurations for FPM PHP
+  ini_file: dest=/etc/php/7.1/fpm/php.ini
+            section=PHP
+            option={{ item.option }}
+            value={{ item.value }}
+            backup=yes
+  with_items: "{{php.php_configs}}"
+
+
+- name: Set permissions on socket - owner
+  lineinfile: "dest=/etc/php/7.1/fpm/pool.d/www.conf state=present regexp='^;?listen.owner' line='listen.owner = vagrant'"
+
+- name: Set permissions on socket - group
+  lineinfile: "dest=/etc/php/7.1/fpm/pool.d/www.conf state=present regexp='^;?listen.group' line='listen.group = vagrant'"
+
+- name: Set permissions on socket - mode
+  lineinfile: "dest=/etc/php/7.1/fpm/pool.d/www.conf state=present regexp='^;?listen.mode' line='listen.mode = 0660'"
+  notify: 
+    - restart php5-fpm
+
+- name: ensure timezone is set in fpm php.ini
+  lineinfile: dest=/etc/php/7.1/fpm/php.ini
+              regexp='date.timezone ='
+              line='date.timezone = {{ server.timezone }}'
+
+- name: enabling opcache
+  lineinfile: dest=/etc/php/7.1/fpm/php.ini
+              regexp=';?opcache.enable=\d'
+              line='opcache.enable=1'
+
+- name: ensure short_open_tag is set in fpm php.ini
+  lineinfile: dest=/etc/php/7.1/fpm/php.ini
+              regexp='short_open_tag ='
+              line='short_open_tag = {{ php.short_open_tag }}'
+

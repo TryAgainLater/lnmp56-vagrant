@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="aavagrant.deploy">
+
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+    <classpath>
+      <pathelement location="${basedir}/server/dev/ant/ant-contrib-1.0b3.jar"/>
+    </classpath>
+  </taskdef>
+
+  <!--~~~~~~~~~ Vagrant Deploy ~~~~~~~~~-->
+  <target name="aavagrant.deploy">
+    <exec dir="${basedir}" executable="vagrant">
+      <arg value="ssh"/>
+      <arg value="-c"/>
+      <arg value="rsync -vaz --no-perms --no-owner --no-group 
+                	--exclude=.git
+                  --exclude=.settings
+                  --exclude=build.xml
+                  --exclude=build.properties
+                  --exclude=.project
+                  --exclude=.buildpath
+                  --exclude=tools
+                  --exclude=src
+                  /vagrant/source/ /var/www/source/;
+      rsync -vaz --no-perms --no-owner --no-group /vagrant/source/src/ /var/www/source/;
+      rsync -vaz --no-perms --no-owner --no-group /vagrant/source/tools/root/ --exclude=.svn /var/www/source/"/>
+    </exec>
+  </target> 
+
+  <!--~~~~~~~~~ BUILD DB ~~~~~~~~~-->
+  <target name="vagrant.build.db">
+    <exec dir="${basedir}" executable="vagrant">
+      <arg value="ssh"/>
+      <arg value="-c"/>
+    	<arg value="cd /vagrant/source/src/app/doctrine; php -f doctrine build-all-reload y"/>
+    </exec>
+  </target>
+
+  <!--~~~~~~~~~ Vagrant destroy ~~~~~~~~~-->
+  <target name="vagrant.destroy">
+    <input message="Are you sure you want to DESTROY Vagrant?${line.separator}ALL MYSQL/UPLOAD FILE data will be DELETED!" addproperty="okStr" validargs="YES,NO" defaultvalue="NO" />
+    <if>
+      <equals arg1="${okStr}" arg2="YES"/>
+      <then>
+        <exec dir="${basedir}" executable="vagrant">
+          <arg value="destroy"/>
+          <arg value="--force"/>
+        </exec>
+      </then>
+    </if>
+  </target>    
+  
+  <!--~~~~~~~~~ Vagrant up ~~~~~~~~~-->
+  <target name="vagrant.up">
+    <exec dir="${basedir}" executable="vagrant">
+      <arg value="up"/>
+    </exec>    
+  </target>	
+
+</project>

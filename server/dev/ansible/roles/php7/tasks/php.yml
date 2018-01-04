@@ -1,0 +1,45 @@
+---
+# PHP
+
+#- name: PHP | Install Ondrej PHP PPA
+#  apt_repository: repo='ppa:ondrej/php' update_cache=yes
+
+- name: Add key for repo
+  apt_key: keyserver=keyserver.ubuntu.com id=AC0E47584A7A714D
+  when: ansible_distribution == "Debian"
+
+- name: PHP | Install Ondrej PHP PPA
+  apt_repository: 
+    repo: deb https://packages.sury.org/php/ {{ ansible_distribution_release }} main
+
+- name: Update apt
+  sudo: yes
+  apt: update_cache=yes
+
+- name: PHP | Install PHP 7.1
+  apt: pkg=php7.1 state=latest
+  tags: common
+
+- name: PHP | Install PHP Modules
+  apt: pkg={{ item }} state=latest
+  tags: common
+  with_items: "{{php.php_modules}}"
+
+# Composer
+
+- stat: path=/usr/local/bin/composer
+  register: composer_folder
+
+- name: PHP | Install Composer
+  shell: curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer creates=/usr/local/bin/composer
+  when: composer_folder.stat.isdir is not defined
+
+# Update PHP.ini
+
+- name: PHP | Install Custom PHP.ini Configurations for CLI PHP
+  ini_file: dest=/etc/php/7.1/cli/php.ini
+            section=PHP
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+            backup=yes
+  with_items: "{{php.php_configs}}"
