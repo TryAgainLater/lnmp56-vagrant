@@ -2,4 +2,3 @@
 .buildpath
 .settings/
 .vagrant/
-source/*
