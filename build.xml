@@ -33,7 +33,8 @@
     <exec dir="${basedir}" executable="vagrant">
       <arg value="ssh"/>
       <arg value="-c"/>
-    	<arg value="cd /vagrant/source/src/app/doctrine; php -f doctrine build-all-reload y"/>
+    	<arg value="cd /vagrant/source/src/app/doctrine; php -f doctrine build-all-reload y;
+    	            find /vagrant/source/src/app/model -type f -exec unix2dos {} \;"/>
     </exec>
   </target>
 
