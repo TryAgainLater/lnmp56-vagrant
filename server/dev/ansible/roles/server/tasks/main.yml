@@ -14,6 +14,7 @@
     - apt-transport-https
     - rsync
     - mc
+    - dos2unix
     
 - name: Env for running mc commander
   command: echo "export TERM=xterm >> /home/vagrant/.bashrc"    
