@@ -13,15 +13,14 @@
     <exec dir="${basedir}" executable="vagrant">
       <arg value="ssh"/>
       <arg value="-c"/>
-      <arg value="rsync -vaz --no-perms --no-owner --no-group 
-                	--exclude=.git
+      <arg value="rsync -vaz --no-perms --no-owner --no-group
+                  --exclude=.git
                   --exclude=.settings
                   --exclude=build.xml
                   --exclude=build.properties
                   --exclude=.project
                   --exclude=.buildpath
                   --exclude=tools
-                  --exclude=src
                   /vagrant/source/ /var/www/source/;
       rsync -vaz --no-perms --no-owner --no-group /vagrant/source/src/ /var/www/source/;
       rsync -vaz --no-perms --no-owner --no-group /vagrant/source/tools/root/ --exclude=.svn /var/www/source/"/>
@@ -35,6 +34,15 @@
       <arg value="-c"/>
     	<arg value="cd /vagrant/source/src/app/doctrine; php -f doctrine build-all-reload y;
     	            find /vagrant/source/src/app/model -type f -exec unix2dos {} \;"/>
+    </exec>
+  </target>
+
+  <!--~~~~~~~~~ Composer Update ~~~~~~~~~-->
+  <target name="composer.update">
+    <exec dir="${basedir}" executable="vagrant">
+      <arg value="ssh"/>
+      <arg value="-c"/>
+      <arg value="cd /vagrant/source/tools/root; php composer.phar update;"/>
     </exec>
   </target>
 
